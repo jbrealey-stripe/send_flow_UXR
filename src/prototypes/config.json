@@ -1,0 +1,8 @@
+{
+  "prototype1": {
+    "name": "Dashboard Shell",
+    "description": "Starter dashboard template. You can edit this metadata in config.json.",
+    "status": "active",
+    "default": true
+  }
+}
