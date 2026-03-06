@@ -10,7 +10,7 @@ const financialPayoutData = {
   amount: 'US$1.00',
   currency: 'USD',
   status: 'Posted',
-  payoutTo: 'jbrealey@stripe.com',
+  payoutTo: 'mkerr@company.com',
   traceId: '4jgIX3jisE5xwHwrDzY=',
   from: 'Financial account',
   to: 'Test Bank  ····6789',
@@ -23,7 +23,7 @@ const financialPayoutData = {
     total: 'US$1.00',
   },
   timeline: [
-    { event: 'Payout initiated to', recipient: 'jbrealey@stripe.com', date: '2 Mar, 09:19' },
+    { event: 'Payout initiated to', recipient: 'mkerr@company.com', date: '2 Mar, 09:19' },
     { event: 'Payout posted', recipient: null, date: '2 Mar, 09:19' },
   ],
 };

@@ -10,21 +10,7 @@ export default function HeaderNav() {
 
   return (
     <div className="flex items-center">
-      {/* App Dock - desktop only */}
-      <div className="hidden lg:flex items-center gap-0.5 px-px py-px border border-neutral-50 rounded-full mr-4">
-        <HeaderButton>
-          <DiamondAppIcon />
-        </HeaderButton>
-        <HeaderButton>
-          <BoatAppIcon />
-        </HeaderButton>
-        <HeaderButton>
-          <ZapAppIcon />
-        </HeaderButton>
-        <HeaderButton className="text-icon-default">
-          <Icon name="apps" size="small" />
-        </HeaderButton>
-      </div>
+      {/* App Dock - hidden */}
 
       <div className="flex items-center space-x-3 lg:space-x-1.5">
         <HeaderButton className="lg:hidden">

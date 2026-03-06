@@ -38,12 +38,12 @@ export default function Prototype1App({ basePath = '', variant = 'existing-user'
     <BasePathContext.Provider value={basePath}>
       <PayoutsProvider variant={variant}>
       <div className="min-h-screen bg-surface">
-        <ControlPanel
+        {/* <ControlPanel
           darkMode={darkMode}
           onToggleDarkMode={() => setDarkMode(!darkMode)}
           sandboxMode={sandboxMode}
           onToggleSandboxMode={() => setSandboxMode(!sandboxMode)}
-        />
+        /> */}
 
         <div className="flex flex-col min-h-screen">
           <div className="flex flex-row flex-1 bg-surface">

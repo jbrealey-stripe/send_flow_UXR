@@ -46,7 +46,7 @@ const recipients = [
   { name: 'Bianca Silverstein', email: 'bianca@sample.com' },
   { name: 'Bradley Copperfield', email: 'bradleycop@company.com' },
   { name: 'Clay Thompson', email: 'cthom@sample.com' },
-  { name: 'Diana Prince', email: 'diana@company.com' },
+  { name: 'Nadia Kowalski', email: 'nadia@company.com' },
 ]
 
 function NetworkIcon({ id, size = 24 }) {
@@ -72,8 +72,13 @@ function NetworkIcon({ id, size = 24 }) {
 }
 
 export default function SendModal({ open, onClose, onPayoutCreated, onRecipientCreated, initialRecipient }) {
-  const { variant } = usePayouts();
-  const visibleRecipients = variant === 'new-user' ? [] : recipients;
+  const { variant, userRecipients } = usePayouts();
+  const visibleRecipients = variant === 'new-user'
+    ? [...userRecipients]
+    : [
+      ...userRecipients.filter((ur) => !recipients.some((r) => r.email === ur.email)),
+      ...recipients,
+    ];
   const [isModalClosing, setIsModalClosing] = useState(false)
   const [modalStep, setModalStep] = useState('choose-recipient')
   const [selectedMethod, setSelectedMethod] = useState(null)
@@ -88,6 +93,8 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
   const [accountNumber, setAccountNumber] = useState('')
   const [confirmAccountNumber, setConfirmAccountNumber] = useState('')
   const [payoutAmount, setPayoutAmount] = useState('')
+  const [receiveAmount, setReceiveAmount] = useState('')
+  const [editingField, setEditingField] = useState('send') // 'send' or 'receive'
   const [showCalendar, setShowCalendar] = useState(false)
   const [isCalendarClosing, setIsCalendarClosing] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
@@ -468,7 +475,7 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
       id: `po_${Date.now()}`,
       amount: getPayoutAmountNum(),
       recipientName: isExistingRecipient ? selectedRecipientName : businessType === 'individual' ? `${legalFirstName} ${legalLastName}` : (businessName || 'Company'),
-      recipientEmail: recipientEmail || 'jbrealey@stripe.com',
+      recipientEmail: recipientEmail || 'mkerr@company.com',
       method: selectedMethod,
       status: 'Initiated',
       initiatesOn: new Date(selectedDate),
@@ -570,24 +577,30 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
 
             {/* Recipients list */}
             <div className="space-y-1">
-              {visibleRecipients.map((recipient) => (
-                <button
-                  key={recipient.email}
-                  onClick={() => {
-                    setIsExistingRecipient(true)
-                    setSelectedRecipientName(recipient.name)
-                    setRecipientEmail(recipient.email)
-                    setSelectedMethod('ach')
-                    setAccountNumber('6789')
-                    setRecipientCountry('US')
-                    setModalStep('confirm')
-                  }}
-                  className="flex flex-col items-start w-full py-[3px] hover:bg-gray-50 rounded-lg px-2 -mx-2 text-left"
-                >
-                  <span className="text-sm font-medium text-gray-900">{recipient.email}</span>
-                  <span className="text-xs text-gray-400">—</span>
-                </button>
-              ))}
+              {visibleRecipients.map((recipient) => {
+                const isUserAdded = userRecipients.some((ur) => ur.email === recipient.email)
+                const countryCode = recipient.destination?.countryCode || 'US'
+                const last4 = recipient.destination?.last4 || '6789'
+                const method = recipient.payoutMethods?.find((m) => m.enabled)?.name?.toLowerCase() || 'ach'
+                return (
+                  <button
+                    key={recipient.email}
+                    onClick={() => {
+                      setIsExistingRecipient(true)
+                      setSelectedRecipientName(recipient.name)
+                      setRecipientEmail(recipient.email)
+                      setSelectedMethod(method === 'stablecoin' ? 'stablecoin' : method === 'wire' ? 'wire' : 'ach')
+                      setAccountNumber(last4)
+                      setRecipientCountry(countryCode)
+                      setModalStep('confirm')
+                    }}
+                    className="flex flex-col items-start w-full py-[3px] hover:bg-gray-50 rounded-lg px-2 -mx-2 text-left"
+                  >
+                    <span className="text-sm font-medium text-gray-900">{recipient.email}</span>
+                    <span className="text-xs text-gray-400">{recipient.name && recipient.name !== '—' ? recipient.name : '—'}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -1365,7 +1378,15 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                     <input
                       type="text"
                       value={payoutAmount}
-                      onChange={(e) => setPayoutAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '')
+                        setPayoutAmount(val)
+                        setEditingField('send')
+                        const num = parseFloat(val) || 0
+                        if (recipientCountry !== 'US' && selectedCountry) {
+                          setReceiveAmount(num ? (num * selectedCountry.exchangeRate).toFixed(2) : '')
+                        }
+                      }}
                       placeholder="0"
                       className="text-display-xlarge-subdued text-default w-32 outline-none text-center placeholder-placeholder bg-transparent font-[500]"
                     />
@@ -1447,9 +1468,30 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                 {recipientCountry !== 'US' && (
                   <div className="mb-3 flex items-center justify-between">
                     <label className="text-sm font-medium text-gray-500">They receive</label>
-                    <div className="flex items-center gap-2 px-4 h-10 border border-gray-200 rounded-lg bg-white">
+                    <div className="flex items-center gap-2 px-4 h-10 border border-gray-200 rounded-lg bg-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
                       <span className="text-gray-400">{selectedCountry.currencySymbol}</span>
-                      <span className="text-gray-700">{payoutAmount ? (parseFloat(payoutAmount) * selectedCountry.exchangeRate).toFixed(2) : '0.00'}</span>
+                      <input
+                        type="text"
+                        value={editingField === 'receive' ? receiveAmount : (payoutAmount ? (parseFloat(payoutAmount) * selectedCountry.exchangeRate).toFixed(2) : '')}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9.]/g, '')
+                          setReceiveAmount(val)
+                          setEditingField('receive')
+                          const num = parseFloat(val) || 0
+                          if (selectedCountry && selectedCountry.exchangeRate) {
+                            setPayoutAmount(num ? (num / selectedCountry.exchangeRate).toFixed(2) : '')
+                          }
+                        }}
+                        onFocus={() => {
+                          if (editingField !== 'receive') {
+                            setReceiveAmount(payoutAmount ? (parseFloat(payoutAmount) * selectedCountry.exchangeRate).toFixed(2) : '')
+                            setEditingField('receive')
+                          }
+                        }}
+                        onBlur={() => setEditingField('send')}
+                        placeholder="0.00"
+                        className="w-24 text-right text-gray-700 outline-none bg-transparent"
+                      />
                     </div>
                   </div>
                 )}
@@ -1554,7 +1596,7 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                           <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
                             <Icon name="person" size="xxsmall" fill="#6b7280" />
                           </div>
-                          <div className="text-gray-900">{recipientEmail || 'jbrealey@stripe.com'}</div>
+                          <div className="text-gray-900">{recipientEmail || 'mkerr@company.com'}</div>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 flex-1">
@@ -2032,7 +2074,7 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                           <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
                             <Icon name="person" size="xxsmall" fill="#6b7280" />
                           </div>
-                          <div className="text-gray-900">{recipientEmail || 'jbrealey@stripe.com'}</div>
+                          <div className="text-gray-900">{recipientEmail || 'mkerr@company.com'}</div>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 flex-1">
@@ -2201,7 +2243,7 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                   </div>
                   <div>
                     <div className="font-medium text-gray-900">Notify recipient</div>
-                    <div className="text-sm text-gray-500">Send a payment confirmation to {recipientEmail || 'jbrealey@stripe.com'}</div>
+                    <div className="text-sm text-gray-500">Send a payment confirmation to {recipientEmail || 'mkerr@company.com'}</div>
                   </div>
                 </div>
 
@@ -2280,7 +2322,7 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                           <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
                             <Icon name="person" size="xxsmall" fill="#6b7280" />
                           </div>
-                          <div className="text-gray-900">{recipientEmail || 'jbrealey@stripe.com'}</div>
+                          <div className="text-gray-900">{recipientEmail || 'mkerr@company.com'}</div>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 flex-1">
@@ -2391,9 +2433,9 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
             {/* Success message */}
             <h2 className="text-2xl font-medium text-gray-900 mb-4">
               {selectedMethod === 'email' ? (
-                <>{recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `US$${formatCurrency(getPayoutAmountNum())}`} will be sent to {recipientEmail || 'jbrealey@stripe.com'}</>
+                <>{recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `US$${formatCurrency(getPayoutAmountNum())}`} will be sent to {recipientEmail || 'mkerr@company.com'}</>
               ) : (
-                <>{recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `US$${formatCurrency(getPayoutAmountNum())}`} is on the way to <span className="text-indigo-600">{recipientEmail || 'jbrealey@stripe.com'}</span></>
+                <>{recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `US$${formatCurrency(getPayoutAmountNum())}`} is on the way to <span className="text-indigo-600">{recipientEmail || 'mkerr@company.com'}</span></>
               )}
             </h2>
             <p className="text-gray-600 mb-10">
