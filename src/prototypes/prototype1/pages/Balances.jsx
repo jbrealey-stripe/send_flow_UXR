@@ -94,7 +94,7 @@ export default function Balances() {
   const [showToDropdown, setShowToDropdown] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [payoutStep, setPayoutStep] = useState('form');
-  const [activeRecentTab, setActiveRecentTab] = useState('payouts');
+  const [activeRecentTab, setActiveRecentTab] = useState('financial');
   const navigate = useNavigate();
   const basePath = useBasePath();
   const { payouts: userPayouts, addPayout, addRecipient, variant } = usePayouts();
