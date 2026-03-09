@@ -131,6 +131,8 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
   const [withNACHA, setWithNACHA] = useState(false)
   const [showFXDetails, setShowFXDetails] = useState(false)
   const [recipientCountry, setRecipientCountry] = useState('US')
+  const [recipientBankName, setRecipientBankName] = useState('Wells Fargo')
+  const [recipientCurrency, setRecipientCurrency] = useState('USD')
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [countryDropdownPos, setCountryDropdownPos] = useState({ top: 0, left: 0, width: 0 })
   const [walletAddress, setWalletAddress] = useState('')
@@ -596,9 +598,11 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                       setIsExistingRecipient(true)
                       setSelectedRecipientName(recipient.name)
                       setRecipientEmail(recipient.email)
-                      setSelectedMethod(method === 'stablecoin' ? 'stablecoin' : method === 'wire' ? 'wire' : 'ach')
+                      setSelectedMethod(countryCode !== 'US' ? 'ach' : method === 'stablecoin' ? 'stablecoin' : method === 'wire' ? 'wire' : 'ach')
                       setAccountNumber(last4)
                       setRecipientCountry(countryCode)
+                      setRecipientBankName(recipient.destination?.bankName || 'Wells Fargo')
+                      setRecipientCurrency(recipient.destination?.currency || 'USD')
                       setModalStep('confirm')
                     }}
                     className="flex flex-col items-start w-full py-[3px] hover:bg-gray-50 rounded-lg px-2 -mx-2 text-left"
@@ -1374,7 +1378,7 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                           ? 'Payout information to be collected'
                           : selectedMethod === 'stablecoin'
                           ? `USDC · ${networks.find(n => n.id === selectedNetwork)?.name || 'Base'} ${walletAddress ? `····${walletAddress.slice(-4)}` : ''}`
-                          : `USD · Wells Fargo ····${accountNumber.slice(-4) || '1234'}`}
+                          : `${recipientCurrency} · ${recipientBankName} ····${accountNumber.slice(-4) || '1234'}`}
                       </div>
                     </div>
                   </div>
@@ -2320,11 +2324,11 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                       ) : (
                         <div className="flex items-center gap-2 flex-1">
                           <div className="w-6 h-6 bg-red-700 rounded flex items-center justify-center">
-                            <span className="text-white text-[10px] font-bold">WF</span>
+                            <span className="text-white text-[10px] font-bold">{recipientBankName.slice(0, 2).toUpperCase()}</span>
                           </div>
                           <div>
-                            <div className="text-gray-900">Wells Fargo ····{accountNumber.slice(-4) || '1234'}</div>
-                            <div className="text-gray-500">USD</div>
+                            <div className="text-gray-900">{recipientBankName} ····{accountNumber.slice(-4) || '1234'}</div>
+                            <div className="text-gray-500">{recipientCurrency}</div>
                           </div>
                         </div>
                       )}
