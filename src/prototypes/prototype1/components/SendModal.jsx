@@ -47,6 +47,7 @@ const recipients = [
   { name: 'Bradley Copperfield', email: 'bradleycop@company.com' },
   { name: 'Clay Thompson', email: 'cthom@sample.com' },
   { name: 'Nadia Kowalski', email: 'nadia@company.com' },
+  { name: 'Samuel Okafor', email: 'samuel.okafor@gmail.com', destination: { countryCode: 'GB', last4: '3344', currency: 'GBP', bankName: 'Barclays' }, payoutMethods: [{ name: 'ACH', enabled: false }, { name: 'Wire', enabled: true }, { name: 'Instant-to-card', enabled: false }, { name: 'Stablecoin', enabled: false }] },
 ]
 
 function NetworkIcon({ id, size = 24 }) {
@@ -577,7 +578,13 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
 
             {/* Recipients list */}
             <div className="space-y-1">
-              {visibleRecipients.map((recipient) => {
+              {visibleRecipients
+                .filter((recipient) => {
+                  if (recipientSearch.trim().length < 3) return true
+                  const q = recipientSearch.trim().toLowerCase()
+                  return (recipient.name && recipient.name.toLowerCase().includes(q)) || (recipient.email && recipient.email.toLowerCase().includes(q))
+                })
+                .map((recipient) => {
                 const isUserAdded = userRecipients.some((ur) => ur.email === recipient.email)
                 const countryCode = recipient.destination?.countryCode || 'US'
                 const last4 = recipient.destination?.last4 || '6789'
@@ -906,17 +913,17 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                       </div>
                       <div className="pt-0.5">
                         <div className="text-[13px] text-gray-500">From: Stripe</div>
-                        <div className="text-[13px] text-gray-500">Subject: Catherine Cactuses sandbox sent you money</div>
+                        <div className="text-[13px] text-gray-500">Subject: Rocket Rides sent you money</div>
                       </div>
                     </div>
                     <div className="border-t border-gray-100 mb-5" />
                     <div className="flex items-center gap-2.5 mb-4">
                       <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
-                        <span className="text-white text-[9px] font-bold">CC</span>
+                        <span className="text-white text-[9px] font-bold">RR</span>
                       </div>
-                      <span className="text-[13px] font-semibold text-gray-900">Catherine Cactuses sandbox</span>
+                      <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
                     </div>
-                    <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Catherine Cactuses sandbox sent you money</h4>
+                    <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides sent you money</h4>
                     <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
                       To receive the money, provide your information by {(() => {
                         const d = new Date()
@@ -928,47 +935,51 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                       Accept money
                     </div>
                     <p className="text-[11px] text-gray-400 leading-relaxed">
-                      Questions? Contact Catherine Cactuses sandbox at <span className="text-indigo-500">cyu+testsc@stripe.com</span> for support.
+                      Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
                     </p>
                   </div>
                 )}
 
                 {/* Portal preview card */}
                 {emailPreviewTab === 'portal' && (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full h-[430px]">
-                    <div className="flex items-center gap-2.5 mb-4">
-                      <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
-                        <span className="text-white text-[9px] font-bold">CC</span>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden">
+                    {/* Blue header */}
+                    <div className="bg-indigo-500 px-5 py-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
+                        <span className="text-indigo-500 text-[8px] font-bold">RR</span>
                       </div>
-                      <span className="text-[13px] font-semibold text-gray-900">Catherine Cactuses sandbox</span>
+                      <div>
+                        <div className="text-[13px] font-semibold text-white">Rocket Rides</div>
+                        <div className="text-[11px] text-indigo-200">Rocket Rides sends payouts with Stripe</div>
+                      </div>
                     </div>
-                    <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">You have money waiting</h4>
-                    <p className="text-[13px] text-gray-500 mb-4 leading-relaxed">
-                      Provide your bank details or select a payout method to receive your funds.
-                    </p>
-                    <div className="space-y-2.5 mb-4">
-                      {emailPayoutMethods.bank && (
-                        <div className="flex items-center gap-2.5 p-3 border border-gray-200 rounded-lg">
-                          <Icon name="bank" size="xsmall" fill="#6b7280" />
-                          <span className="text-[13px] text-gray-700">Bank account</span>
-                        </div>
-                      )}
-                      {emailPayoutMethods.debit && (
-                        <div className="flex items-center gap-2.5 p-3 border border-gray-200 rounded-lg">
-                          <Icon name="card" size="xsmall" fill="#6b7280" />
-                          <span className="text-[13px] text-gray-700">Debit card</span>
-                        </div>
-                      )}
-                      {emailPayoutMethods.stablecoin && (
-                        <div className="flex items-center gap-2.5 p-3 border border-gray-200 rounded-lg">
-                          <Icon name="crypto" size="xsmall" fill="#6b7280" />
-                          <span className="text-[13px] text-gray-700">Stablecoin (USDC)</span>
-                        </div>
-                      )}
+                    {/* Content */}
+                    <div className="px-5 py-4">
+                      <h4 className="text-[15px] font-bold text-gray-900 mb-1 leading-snug">Select how to get paid</h4>
+                      <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">Let us know how and where you'd like the money to be sent.</p>
+                      {/* Selected method card */}
+                      <div className="border-2 border-indigo-500 rounded-lg px-3.5 py-2.5 mb-3">
+                        <div className="text-[12px] font-semibold text-gray-900">Bank account</div>
+                        <div className="text-[11px] text-gray-500">Arrives in 2–3 days</div>
+                      </div>
+                      {/* Search */}
+                      <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg mb-3">
+                        <Icon name="search" size="xsmall" fill="#9ca3af" />
+                        <span className="text-[11px] text-gray-400">Search for your bank</span>
+                      </div>
+                      {/* Bank grid */}
+                      <div className="grid grid-cols-3 gap-1.5 mb-3">
+                        {['Chase', 'BofA', 'Citi', 'Wells\nFargo', 'Capital\nOne', 'Sun\nTrust', 'US\nBank', '1st\nCentury', 'TD\nBank'].map((bank) => (
+                          <div key={bank} className="flex items-center justify-center h-10 border border-gray-200 rounded-lg">
+                            <span className="text-[9px] font-bold text-gray-500 text-center leading-tight whitespace-pre-line">{bank}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-gray-700 mb-3">Enter bank details manually instead <span className="text-gray-400">→</span></p>
+                      <div className="border-t border-gray-100 pt-3">
+                        <div className="bg-indigo-500 text-white text-[12px] font-semibold py-2 rounded-lg text-center">Continue →</div>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-gray-400 leading-relaxed">
-                      Powered by <span className="font-medium">Stripe</span>
-                    </p>
                   </div>
                 )}
               </div>
@@ -1086,74 +1097,32 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
               </div>
             </div>
 
-            {/* Right side - Preview */}
-            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ backgroundImage: 'url(/right-gradient.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-              <div className="bg-white rounded-xl p-4 shadow-md border-[12px] border-gray-100 w-[400px]">
-                <div key={modalStep} className="animate-[fadeIn_0.3s_ease-out]">
-                  {/* Review section */}
-                  <h3 className="text-xs font-semibold text-gray-900 mb-3">Review</h3>
-                  <div className="space-y-2 text-[14px]">
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">From</span>
-                      <div className="w-32 h-4 bg-gray-100 rounded"></div>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">To</span>
-                      <div className="w-32 h-4 bg-gray-100 rounded"></div>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Method</span>
-                      <span className="text-gray-900">
-                        {selectedMethod === 'email' ? 'Pay via email' : selectedMethod === 'ach' ? 'Standard transfer' : selectedMethod === 'wire' ? 'Wire transfer' : selectedMethod === 'stablecoin' ? 'Stablecoin transfer (USDC)' : ''}
-                      </span>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Initiated</span>
-                      <span className="text-gray-900">September 30, 2025</span>
-                    </div>
-                    {selectedMethod !== 'email' && (
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Estimated arrival</span>
-                      <span className="text-gray-900">
-                        {selectedMethod === 'ach' ? '2-3 business days' : selectedMethod === 'wire' ? 'Minutes' : selectedMethod === 'stablecoin' ? 'Seconds' : ''}
-                      </span>
-                    </div>
-                    )}
+            {/* Right side - Email notification preview */}
+            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c4f0e8 0%, #c9d5f5 40%, #d8c4f0 70%, #e0c8ef 100%)' }}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-[400px] animate-[fadeIn_0.3s_ease-out]">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shrink-0">
+                    <Icon name="send" size="small" fill="white" />
                   </div>
-
-                  {/* Fees section */}
-                  <div className="border-t border-gray-100 mt-4 pt-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-1.5">Fees</h3>
-                    <div className="space-y-2 text-[14px]">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Payout amount</span>
-                        {getPayoutAmountNum() > 0 ? <span className="text-gray-900">${formatCurrency(getPayoutAmountNum())}</span> : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Standard payout fee</span>
-                        <span className="text-gray-900">${formatCurrency(getFee())}</span>
-                      </div>
-                      {recipientCountry !== 'US' && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Foreign exchange fee</span>
-                          {getPayoutAmountNum() > 0 ? <span className="text-gray-900">${formatCurrency(getFxFee())}</span> : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">You'll pay</span>
-                        {getPayoutAmountNum() > 0 ? <span className="text-gray-900 font-medium">${formatCurrency(getTotalPay())}</span> : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">They'll receive</span>
-                        {getPayoutAmountNum() > 0 ? (
-                          <span className="text-gray-900 font-medium">
-                            {recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `$${formatCurrency(getPayoutAmountNum())}`}
-                          </span>
-                        ) : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                      </div>
-                    </div>
+                  <div className="pt-0.5">
+                    <div className="text-[13px] text-gray-500">From: Stripe</div>
+                    <div className="text-[13px] text-gray-500">Subject: Rocket Rides has sent you money</div>
                   </div>
                 </div>
+                <div className="border-t border-gray-100 mb-5" />
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">RR</span>
+                  </div>
+                  <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
+                </div>
+                <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides has sent you money</h4>
+                <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                  Rocket Rides just sent money to your account.
+                </p>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
+                </p>
               </div>
             </div>
           </div>
@@ -1289,74 +1258,32 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
               </div>
             </div>
 
-            {/* Right side - Preview */}
-            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ backgroundImage: 'url(/right-gradient.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-              <div className="bg-white rounded-xl p-4 shadow-md border-[12px] border-gray-100 w-[400px]">
-                <div key={modalStep} className="animate-[fadeIn_0.3s_ease-out]">
-                  {/* Review section */}
-                  <h3 className="text-xs font-semibold text-gray-900 mb-3">Review</h3>
-                  <div className="space-y-2 text-[14px]">
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">From</span>
-                      <div className="w-32 h-4 bg-gray-100 rounded"></div>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">To</span>
-                      <div className="w-32 h-4 bg-gray-100 rounded"></div>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Method</span>
-                      <span className="text-gray-900">
-                        {selectedMethod === 'email' ? 'Pay via email' : selectedMethod === 'ach' ? 'Standard transfer' : selectedMethod === 'wire' ? 'Wire transfer' : selectedMethod === 'stablecoin' ? 'Stablecoin transfer (USDC)' : ''}
-                      </span>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Initiated</span>
-                      <span className="text-gray-900">September 30, 2025</span>
-                    </div>
-                    {selectedMethod !== 'email' && (
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Estimated arrival</span>
-                      <span className="text-gray-900">
-                        {selectedMethod === 'ach' ? '2-3 business days' : selectedMethod === 'wire' ? 'Minutes' : selectedMethod === 'stablecoin' ? 'Seconds' : ''}
-                      </span>
-                    </div>
-                    )}
+            {/* Right side - Email notification preview */}
+            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c4f0e8 0%, #c9d5f5 40%, #d8c4f0 70%, #e0c8ef 100%)' }}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-[400px] animate-[fadeIn_0.3s_ease-out]">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shrink-0">
+                    <Icon name="send" size="small" fill="white" />
                   </div>
-
-                  {/* Fees section */}
-                  <div className="border-t border-gray-100 mt-4 pt-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-1.5">Fees</h3>
-                    <div className="space-y-2 text-[14px]">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Payout amount</span>
-                        {getPayoutAmountNum() > 0 ? <span className="text-gray-900">${formatCurrency(getPayoutAmountNum())}</span> : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Standard payout fee</span>
-                        <span className="text-gray-900">${formatCurrency(getFee())}</span>
-                      </div>
-                      {recipientCountry !== 'US' && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Foreign exchange fee</span>
-                          {getPayoutAmountNum() > 0 ? <span className="text-gray-900">${formatCurrency(getFxFee())}</span> : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">You'll pay</span>
-                        {getPayoutAmountNum() > 0 ? <span className="text-gray-900 font-medium">${formatCurrency(getTotalPay())}</span> : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">They'll receive</span>
-                        {getPayoutAmountNum() > 0 ? (
-                          <span className="text-gray-900 font-medium">
-                            {recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `$${formatCurrency(getPayoutAmountNum())}`}
-                          </span>
-                        ) : <div className="w-24 h-4 bg-gray-100 rounded"></div>}
-                      </div>
-                    </div>
+                  <div className="pt-0.5">
+                    <div className="text-[13px] text-gray-500">From: Stripe</div>
+                    <div className="text-[13px] text-gray-500">Subject: Rocket Rides has sent you money</div>
                   </div>
                 </div>
+                <div className="border-t border-gray-100 mb-5" />
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">RR</span>
+                  </div>
+                  <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
+                </div>
+                <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides has sent you money</h4>
+                <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                  Rocket Rides just sent money to your account.
+                </p>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
+                </p>
               </div>
             </div>
           </div>
@@ -1372,8 +1299,12 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
               {/* Scrollable form content */}
               <div ref={confirmScrollRef} className="flex-1 px-5 pt-2 overflow-y-auto">
                 {/* Amount input */}
+                {(() => {
+                  const len = (payoutAmount || '0').length
+                  const fontSize = len <= 4 ? 56 : Math.max(28, 56 - (len - 4) * 4)
+                  return (
                 <div className="flex items-baseline justify-center mb-4">
-                  <span className="text-display-small text-default mr-0.5">$</span>
+                  <span className="text-default mr-0.5" style={{ fontSize: fontSize * 0.55, lineHeight: `${fontSize * 1.15}px`, transition: 'font-size 0.15s ease' }}>$</span>
                   <div className="border-b-2 border-default">
                     <input
                       type="text"
@@ -1388,11 +1319,14 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                         }
                       }}
                       placeholder="0"
-                      className="text-display-xlarge-subdued text-default w-32 outline-none text-center placeholder-placeholder bg-transparent font-[500]"
+                      className="text-default outline-none text-center placeholder-placeholder bg-transparent"
+                      style={{ fontSize, lineHeight: `${fontSize * 1.15}px`, fontWeight: 500, width: `${Math.max(3, (payoutAmount || '0').length + 1)}ch`, transition: 'font-size 0.15s ease, width 0.15s ease' }}
                     />
                   </div>
-                  <span className="text-body-large text-subdued ml-2">USD</span>
+                  <span className="text-subdued ml-2" style={{ fontSize: fontSize * 0.3, lineHeight: `${fontSize * 1.15}px`, transition: 'font-size 0.15s ease' }}>USD</span>
                 </div>
+                  )
+                })()}
 
                 {/* From section */}
                 <div className="mb-3">
@@ -1433,10 +1367,12 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">
-                        {isExistingRecipient ? selectedRecipientName : businessType === 'individual' ? `${legalFirstName} ${legalLastName}` : (businessName || 'Company')}
+                        {selectedMethod === 'email' ? recipientEmail : isExistingRecipient ? selectedRecipientName : businessType === 'individual' ? `${legalFirstName} ${legalLastName}` : (businessName || 'Company')}
                       </div>
                       <div className="text-[12px] text-gray-500">
-                        {selectedMethod === 'stablecoin'
+                        {selectedMethod === 'email'
+                          ? 'Payout information to be collected'
+                          : selectedMethod === 'stablecoin'
                           ? `USDC · ${networks.find(n => n.id === selectedNetwork)?.name || 'Base'} ${walletAddress ? `····${walletAddress.slice(-4)}` : ''}`
                           : `USD · Wells Fargo ····${accountNumber.slice(-4) || '1234'}`}
                       </div>
@@ -1563,106 +1499,134 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
             </div>
 
             {/* Right side - Preview */}
-            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ backgroundImage: 'url(/right-gradient.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-              <div className="bg-white rounded-xl p-4 shadow-md border-[12px] border-gray-100 w-[400px]">
-                <div key={modalStep} className="animate-[fadeIn_0.3s_ease-out]">
-                  {/* Review section */}
-                  <h3 className="text-xs font-semibold text-gray-900 mb-3">Review</h3>
-                  <div className="space-y-2 text-[14px]">
-                    <div className="flex gap-6 items-start">
-                      <span className="text-gray-500 w-28">From</span>
-                      <div className="flex items-center gap-2 flex-1">
-                        <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
-                          <span className="text-white text-[10px] font-bold">S</span>
-                        </div>
-                        <div>
-                          <div className="text-gray-900">Financial account</div>
-                          <div className="text-gray-500">USD</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <span className="text-gray-500 w-28">To</span>
-                      {selectedMethod === 'stablecoin' ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <NetworkIcon id={selectedNetwork} size={24} />
-                          <div>
-                            <div className="text-gray-900">{networks.find(n => n.id === selectedNetwork)?.name || 'Base'} wallet</div>
-                            <div className="text-gray-500 text-[12px]">{walletAddress ? `${walletAddress.slice(0, 6)}····${walletAddress.slice(-4)}` : 'No address'}</div>
-                          </div>
-                        </div>
-                      ) : selectedMethod === 'email' ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Icon name="person" size="xxsmall" fill="#6b7280" />
-                          </div>
-                          <div className="text-gray-900">{recipientEmail || 'mkerr@company.com'}</div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="w-6 h-6 bg-red-700 rounded flex items-center justify-center">
-                            <span className="text-white text-[10px] font-bold">WF</span>
-                          </div>
-                          <div>
-                            <div className="text-gray-900">Wells Fargo ····{accountNumber.slice(-4) || '1234'}</div>
-                            <div className="text-gray-500">{selectedCountry.currency}</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Method</span>
-                      <span className="text-gray-900 flex-1">
-                        {selectedMethod === 'email' ? 'Pay via email' : selectedMethod === 'ach' ? 'Standard transfer' : selectedMethod === 'wire' ? 'Wire transfer' : selectedMethod === 'stablecoin' ? 'Stablecoin transfer (USDC)' : ''}
-                      </span>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">{selectedDate.toDateString() === new Date().toDateString() ? 'Initiated on' : 'Initiated on'}</span>
-                      <span className="text-gray-900 flex-1">{selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                    </div>
-                    {selectedMethod !== 'email' && (
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Estimated arrival</span>
-                      <span className="text-gray-900 flex-1">
-                        {selectedMethod === 'ach' ? '2-3 business days' : selectedMethod === 'wire' ? 'Minutes' : selectedMethod === 'stablecoin' ? 'Seconds' : ''}
-                      </span>
-                    </div>
-                    )}
-                  </div>
+            {selectedMethod === 'email' ? (
+              <div className="w-1/2 shrink-0 p-4">
+              <div className="h-full flex flex-col items-center px-5 py-5 overflow-y-auto rounded-2xl" style={{ background: 'linear-gradient(135deg, #c4f0e8 0%, #c9d5f5 40%, #d8c4f0 70%, #e0c8ef 100%)' }}>
+                {/* Tabs */}
+                <div className="flex gap-2 mb-5">
+                  <button
+                    onClick={() => setEmailPreviewTab('email')}
+                    className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-colors ${emailPreviewTab === 'email' ? 'border-2 border-indigo-500 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700 bg-white/60'}`}
+                  >
+                    Recipient email address
+                  </button>
+                  <button
+                    onClick={() => setEmailPreviewTab('portal')}
+                    className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-colors ${emailPreviewTab === 'portal' ? 'border-2 border-indigo-500 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700 bg-white/60'}`}
+                  >
+                    Recipient portal
+                  </button>
+                </div>
 
-                  {/* Fees section */}
-                  <div className="border-t border-gray-100 mt-4 pt-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-1.5">Fees</h3>
-                    <div className="space-y-2 text-[14px]">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Payout amount</span>
-                        <span className="text-gray-900">${formatCurrency(getPayoutAmountNum())}</span>
+                {/* Email preview card */}
+                {emailPreviewTab === 'email' && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full h-[430px]">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shrink-0">
+                        <Icon name="send" size="small" fill="white" />
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Standard payout fee</span>
-                        <span className="text-gray-900">${formatCurrency(getFee())}</span>
-                      </div>
-                      {recipientCountry !== 'US' && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Foreign exchange fee</span>
-                          <span className="text-gray-900">${formatCurrency(getFxFee())}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">You'll pay</span>
-                        <span className="text-gray-900 font-medium">${formatCurrency(getTotalPay())}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">They'll receive</span>
-                        <span className="text-gray-900 font-medium">
-                          {recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `$${formatCurrency(getPayoutAmountNum())}`}
-                        </span>
+                      <div className="pt-0.5">
+                        <div className="text-[13px] text-gray-500">From: Stripe</div>
+                        <div className="text-[13px] text-gray-500">Subject: Rocket Rides sent you money</div>
                       </div>
                     </div>
+                    <div className="border-t border-gray-100 mb-5" />
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
+                        <span className="text-white text-[9px] font-bold">RR</span>
+                      </div>
+                      <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
+                    </div>
+                    <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides sent you money</h4>
+                    <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                      To receive the money, provide your information by {(() => {
+                        const d = new Date()
+                        d.setDate(d.getDate() + 3)
+                        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                      })()}.
+                    </p>
+                    <div className="bg-indigo-500 text-white text-[13px] font-semibold px-5 py-2 rounded-full inline-block mb-5">
+                      Accept money
+                    </div>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
+                    </p>
+                  </div>
+                )}
+
+                {/* Portal preview card */}
+                {emailPreviewTab === 'portal' && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden">
+                    {/* Blue header */}
+                    <div className="bg-indigo-500 px-5 py-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
+                        <span className="text-indigo-500 text-[8px] font-bold">RR</span>
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-semibold text-white">Rocket Rides</div>
+                        <div className="text-[11px] text-indigo-200">Rocket Rides sends payouts with Stripe</div>
+                      </div>
+                    </div>
+                    {/* Content */}
+                    <div className="px-5 py-4">
+                      <h4 className="text-[15px] font-bold text-gray-900 mb-1 leading-snug">Select how to get paid</h4>
+                      <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">Let us know how and where you'd like the money to be sent.</p>
+                      {/* Selected method card */}
+                      <div className="border-2 border-indigo-500 rounded-lg px-3.5 py-2.5 mb-3">
+                        <div className="text-[12px] font-semibold text-gray-900">Bank account</div>
+                        <div className="text-[11px] text-gray-500">Arrives in 2–3 days</div>
+                      </div>
+                      {/* Search */}
+                      <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg mb-3">
+                        <Icon name="search" size="xsmall" fill="#9ca3af" />
+                        <span className="text-[11px] text-gray-400">Search for your bank</span>
+                      </div>
+                      {/* Bank grid */}
+                      <div className="grid grid-cols-3 gap-1.5 mb-3">
+                        {['Chase', 'BofA', 'Citi', 'Wells\nFargo', 'Capital\nOne', 'Sun\nTrust', 'US\nBank', '1st\nCentury', 'TD\nBank'].map((bank) => (
+                          <div key={bank} className="flex items-center justify-center h-10 border border-gray-200 rounded-lg">
+                            <span className="text-[9px] font-bold text-gray-500 text-center leading-tight whitespace-pre-line">{bank}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-gray-700 mb-3">Enter bank details manually instead <span className="text-gray-400">→</span></p>
+                      <div className="border-t border-gray-100 pt-3">
+                        <div className="bg-indigo-500 text-white text-[12px] font-semibold py-2 rounded-lg text-center">Continue →</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              </div>
+            ) : (
+            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c4f0e8 0%, #c9d5f5 40%, #d8c4f0 70%, #e0c8ef 100%)' }}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-[400px] animate-[fadeIn_0.3s_ease-out]">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shrink-0">
+                    <Icon name="send" size="small" fill="white" />
+                  </div>
+                  <div className="pt-0.5">
+                    <div className="text-[13px] text-gray-500">From: Stripe</div>
+                    <div className="text-[13px] text-gray-500">Subject: Rocket Rides has sent you money</div>
                   </div>
                 </div>
+                <div className="border-t border-gray-100 mb-5" />
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">RR</span>
+                  </div>
+                  <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
+                </div>
+                <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides has sent you money</h4>
+                <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                  Rocket Rides just sent money to your account.
+                </p>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
+                </p>
               </div>
             </div>
+            )}
           </div>
         )}
 
@@ -2040,141 +2004,177 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
               </div>
             </div>
 
-            {/* Right side - Preview */}
-            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ backgroundImage: 'url(/right-gradient.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-              <div className="bg-white rounded-xl p-4 shadow-md border-[12px] border-gray-100 w-[400px]">
-                <div key={modalStep} className="animate-[fadeIn_0.3s_ease-out]">
-                  {/* Review section */}
-                  <h3 className="text-xs font-semibold text-gray-900 mb-3">Review</h3>
-                  <div className="space-y-2 text-[14px]">
-                    <div className="flex gap-6 items-start">
-                      <span className="text-gray-500 w-28">From</span>
-                      <div className="flex items-center gap-2 flex-1">
-                        <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
-                          <span className="text-white text-[10px] font-bold">S</span>
-                        </div>
-                        <div>
-                          <div className="text-gray-900">Financial account</div>
-                          <div className="text-gray-500">USD</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <span className="text-gray-500 w-28">To</span>
-                      {selectedMethod === 'stablecoin' ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <NetworkIcon id={selectedNetwork} size={24} />
-                          <div>
-                            <div className="text-gray-900">{networks.find(n => n.id === selectedNetwork)?.name || 'Base'} wallet</div>
-                            <div className="text-gray-500 text-[12px]">{walletAddress ? `${walletAddress.slice(0, 6)}····${walletAddress.slice(-4)}` : 'No address'}</div>
-                          </div>
-                        </div>
-                      ) : selectedMethod === 'email' ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Icon name="person" size="xxsmall" fill="#6b7280" />
-                          </div>
-                          <div className="text-gray-900">{recipientEmail || 'mkerr@company.com'}</div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="w-6 h-6 bg-red-700 rounded flex items-center justify-center">
-                            <span className="text-white text-[10px] font-bold">WF</span>
-                          </div>
-                          <div>
-                            <div className="text-gray-900">Wells Fargo ····{accountNumber.slice(-4) || '1234'}</div>
-                            <div className="text-gray-500">USD</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Method</span>
-                      <span className="text-gray-900 flex-1">
-                        {selectedMethod === 'email' ? 'Pay via email' : selectedMethod === 'ach' ? 'Standard transfer' : selectedMethod === 'wire' ? 'Wire transfer' : selectedMethod === 'stablecoin' ? 'Stablecoin transfer (USDC)' : ''}
-                      </span>
-                    </div>
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">{selectedDate.toDateString() === new Date().toDateString() ? 'Initiated on' : 'Initiated on'}</span>
-                      <span key={`initiates-${selectedDate.getTime()}`} className="text-gray-900 flex-1 animate-[fadeIn_0.2s_ease-out]">{selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                    </div>
-                    {selectedCadence === 'Monthly' && (
-                      <div className="flex gap-6 animate-[fadeIn_0.2s_ease-out]">
-                        <span className="text-gray-500 w-28">Repeats on</span>
-                        <span key={`monthly-${selectedDate.getDate()}`} className="text-gray-900 flex-1 animate-[fadeIn_0.2s_ease-out]">
-                          {selectedDate.getDate()}{selectedDate.getDate() === 1 || selectedDate.getDate() === 21 || selectedDate.getDate() === 31 ? 'st' : selectedDate.getDate() === 2 || selectedDate.getDate() === 22 ? 'nd' : selectedDate.getDate() === 3 || selectedDate.getDate() === 23 ? 'rd' : 'th'} of every month
-                        </span>
-                      </div>
-                    )}
-                    {selectedCadence === 'Weekly' && (
-                      <div className="flex gap-6 animate-[fadeIn_0.2s_ease-out]">
-                        <span className="text-gray-500 w-28">Repeats on</span>
-                        <span key={`weekly-${selectedDate.getDay()}`} className="text-gray-900 flex-1 animate-[fadeIn_0.2s_ease-out]">
-                          Every {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
-                        </span>
-                      </div>
-                    )}
-                    {selectedCadence === 'Annually' && (
-                      <div className="flex gap-6 animate-[fadeIn_0.2s_ease-out]">
-                        <span className="text-gray-500 w-28">Repeats on</span>
-                        <span key={`annually-${selectedDate.getMonth()}-${selectedDate.getDate()}`} className="text-gray-900 flex-1 animate-[fadeIn_0.2s_ease-out]">
-                          {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}, every year
-                        </span>
-                      </div>
-                    )}
-                    {(selectedCadence === 'Monthly' || selectedCadence === 'Weekly' || selectedCadence === 'Annually') && lastInstanceDate && (
-                      <div className="flex gap-6 animate-[fadeIn_0.2s_ease-out]">
-                        <span className="text-gray-500 w-28">Ends on</span>
-                        <span key={`ends-${lastInstanceDate.getTime()}`} className="text-gray-900 flex-1 animate-[fadeIn_0.2s_ease-out]">{lastInstanceDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
-                    )}
-                    {selectedMethod !== 'email' && (
-                    <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">Estimated arrival</span>
-                      <span className="text-gray-900 flex-1">
-                        {selectedMethod === 'ach' ? '2-3 business days' : selectedMethod === 'wire' ? 'Minutes' : selectedMethod === 'stablecoin' ? 'Seconds' : ''}
-                      </span>
-                    </div>
-                    )}
+            {/* Right side - Email notification preview */}
+            <div className="w-1/2 my-4 mr-4 p-4 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c4f0e8 0%, #c9d5f5 40%, #d8c4f0 70%, #e0c8ef 100%)' }}>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-[400px] animate-[fadeIn_0.3s_ease-out]">
+                <div className="flex items-start gap-3 mb-5">
+                  <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shrink-0">
+                    <Icon name="send" size="small" fill="white" />
                   </div>
-
-                  {/* Fees section */}
-                  <div className="border-t border-gray-100 mt-4 pt-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-1.5">Fees</h3>
-                    <div className="space-y-2 text-[14px]">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Payout amount</span>
-                        <span className="text-gray-900">${formatCurrency(getPayoutAmountNum())}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Standard payout fee</span>
-                        <span className="text-gray-900">${formatCurrency(getFee())}</span>
-                      </div>
-                      {recipientCountry !== 'US' && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Foreign exchange fee</span>
-                          <span className="text-gray-900">${formatCurrency(getFxFee())}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">You'll pay</span>
-                        <span className="text-gray-900 font-medium">${formatCurrency(getTotalPay())}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">They'll receive</span>
-                        <span className="text-gray-900 font-medium">
-                          {recipientCountry !== 'US' ? `${selectedCountry.currencySymbol}${formatCurrency(getTheyReceive())} ${selectedCountry.currency}` : `$${formatCurrency(getPayoutAmountNum())}`}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="pt-0.5">
+                    <div className="text-[13px] text-gray-500">From: Stripe</div>
+                    <div className="text-[13px] text-gray-500">Subject: Rocket Rides has sent you money</div>
                   </div>
                 </div>
+                <div className="border-t border-gray-100 mb-5" />
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
+                    <span className="text-white text-[9px] font-bold">RR</span>
+                  </div>
+                  <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
+                </div>
+                <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides has sent you money</h4>
+                <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                  Rocket Rides just sent money to your account.
+                </p>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {modalStep === 'summary' && (
+        {modalStep === 'summary' && selectedMethod === 'email' && (
+          <div
+            className="flex h-[calc(100%-60px)] animate-[slideInRight_0.3s_ease-out]"
+            onKeyDown={(e) => { if (e.key === 'Enter') { createScheduledPayout(); setModalStep('success'); } }}
+          >
+            {/* Left side - Summary content */}
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1 px-5 pt-2">
+                <div className="mb-1">
+                  <span className="text-display-xlarge text-gray-900">US${formatCurrency(getPayoutAmountNum())}</span>
+                </div>
+                <div className="text-body-medium text-gray-500 mb-6">
+                  to {recipientEmail}
+                </div>
+                <p className="text-body-medium text-gray-900 leading-relaxed">
+                  Your recipient will receive this money once they provide their details. If this doesn't happen in the next 3 days, the payout will be cancelled.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 px-5 pb-4">
+                <button
+                  onClick={() => setModalStep('confirm')}
+                  className="px-5 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => {
+                    createScheduledPayout()
+                    setModalStep('success')
+                  }}
+                  className="px-5 py-2 text-sm font-medium text-white rounded-lg bg-indigo-500 hover:bg-indigo-600"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+
+            {/* Right side - Email/Portal Preview */}
+            <div className="w-1/2 shrink-0 p-4">
+              <div className="h-full flex flex-col items-center px-5 py-5 overflow-y-auto rounded-2xl" style={{ background: 'linear-gradient(135deg, #c4f0e8 0%, #c9d5f5 40%, #d8c4f0 70%, #e0c8ef 100%)' }}>
+                {/* Tabs */}
+                <div className="flex gap-2 mb-5">
+                  <button
+                    onClick={() => setEmailPreviewTab('email')}
+                    className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-colors ${emailPreviewTab === 'email' ? 'border-2 border-indigo-500 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700 bg-white/60'}`}
+                  >
+                    Recipient email address
+                  </button>
+                  <button
+                    onClick={() => setEmailPreviewTab('portal')}
+                    className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-colors ${emailPreviewTab === 'portal' ? 'border-2 border-indigo-500 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700 bg-white/60'}`}
+                  >
+                    Recipient portal
+                  </button>
+                </div>
+
+                {/* Email preview card */}
+                {emailPreviewTab === 'email' && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full h-[430px]">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center shrink-0">
+                        <Icon name="send" size="small" fill="white" />
+                      </div>
+                      <div className="pt-0.5">
+                        <div className="text-[13px] text-gray-500">From: Stripe</div>
+                        <div className="text-[13px] text-gray-500">Subject: Rocket Rides sent you money</div>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-100 mb-5" />
+                    <div className="flex items-center gap-2.5 mb-4">
+                      <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center">
+                        <span className="text-white text-[9px] font-bold">RR</span>
+                      </div>
+                      <span className="text-[13px] font-semibold text-gray-900">Rocket Rides</span>
+                    </div>
+                    <h4 className="text-[17px] font-bold text-gray-900 mb-3 leading-snug">Rocket Rides sent you money</h4>
+                    <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                      To receive the money, provide your information by {(() => {
+                        const d = new Date()
+                        d.setDate(d.getDate() + 3)
+                        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                      })()}.
+                    </p>
+                    <div className="bg-indigo-500 text-white text-[13px] font-semibold px-5 py-2 rounded-full inline-block mb-5">
+                      Accept money
+                    </div>
+                    <p className="text-[11px] text-gray-400 leading-relaxed">
+                      Questions? Contact Rocket Rides at <span className="text-indigo-500">support@rocketrides.com</span> for support.
+                    </p>
+                  </div>
+                )}
+
+                {/* Portal preview card */}
+                {emailPreviewTab === 'portal' && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden">
+                    {/* Blue header */}
+                    <div className="bg-indigo-500 px-5 py-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
+                        <span className="text-indigo-500 text-[8px] font-bold">RR</span>
+                      </div>
+                      <div>
+                        <div className="text-[13px] font-semibold text-white">Rocket Rides</div>
+                        <div className="text-[11px] text-indigo-200">Rocket Rides sends payouts with Stripe</div>
+                      </div>
+                    </div>
+                    {/* Content */}
+                    <div className="px-5 py-4">
+                      <h4 className="text-[15px] font-bold text-gray-900 mb-1 leading-snug">Select how to get paid</h4>
+                      <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">Let us know how and where you'd like the money to be sent.</p>
+                      {/* Selected method card */}
+                      <div className="border-2 border-indigo-500 rounded-lg px-3.5 py-2.5 mb-3">
+                        <div className="text-[12px] font-semibold text-gray-900">Bank account</div>
+                        <div className="text-[11px] text-gray-500">Arrives in 2–3 days</div>
+                      </div>
+                      {/* Search */}
+                      <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg mb-3">
+                        <Icon name="search" size="xsmall" fill="#9ca3af" />
+                        <span className="text-[11px] text-gray-400">Search for your bank</span>
+                      </div>
+                      {/* Bank grid */}
+                      <div className="grid grid-cols-3 gap-1.5 mb-3">
+                        {['Chase', 'BofA', 'Citi', 'Wells\nFargo', 'Capital\nOne', 'Sun\nTrust', 'US\nBank', '1st\nCentury', 'TD\nBank'].map((bank) => (
+                          <div key={bank} className="flex items-center justify-center h-10 border border-gray-200 rounded-lg">
+                            <span className="text-[9px] font-bold text-gray-500 text-center leading-tight whitespace-pre-line">{bank}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-gray-700 mb-3">Enter bank details manually instead <span className="text-gray-400">→</span></p>
+                      <div className="border-t border-gray-100 pt-3">
+                        <div className="bg-indigo-500 text-white text-[12px] font-semibold py-2 rounded-lg text-center">Continue →</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {modalStep === 'summary' && selectedMethod !== 'email' && (
           <div
             className="flex h-[calc(100%-60px)]"
             onKeyDown={(e) => { if (e.key === 'Enter') { createScheduledPayout(); setModalStep('success'); } }}
@@ -2317,13 +2317,6 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                             <div className="text-gray-500 text-[12px]">{walletAddress ? `${walletAddress.slice(0, 6)}····${walletAddress.slice(-4)}` : 'No address'}</div>
                           </div>
                         </div>
-                      ) : selectedMethod === 'email' ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Icon name="person" size="xxsmall" fill="#6b7280" />
-                          </div>
-                          <div className="text-gray-900">{recipientEmail || 'mkerr@company.com'}</div>
-                        </div>
                       ) : (
                         <div className="flex items-center gap-2 flex-1">
                           <div className="w-6 h-6 bg-red-700 rounded flex items-center justify-center">
@@ -2339,11 +2332,11 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                     <div className="flex gap-6">
                       <span className="text-gray-500 w-28">Method</span>
                       <span className="text-gray-900 flex-1">
-                        {selectedMethod === 'email' ? 'Pay via email' : selectedMethod === 'ach' ? 'Standard transfer' : selectedMethod === 'wire' ? 'Wire transfer' : selectedMethod === 'stablecoin' ? 'Stablecoin transfer (USDC)' : ''}
+                        {selectedMethod === 'ach' ? 'Standard transfer' : selectedMethod === 'wire' ? 'Wire transfer' : selectedMethod === 'stablecoin' ? 'Stablecoin transfer (USDC)' : ''}
                       </span>
                     </div>
                     <div className="flex gap-6">
-                      <span className="text-gray-500 w-28">{selectedDate.toDateString() === new Date().toDateString() ? 'Initiated on' : 'Initiated on'}</span>
+                      <span className="text-gray-500 w-28">Initiated on</span>
                       <span className="text-gray-900 flex-1">{selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                     </div>
                     {repeatPayout && selectedCadence === 'Monthly' && (
@@ -2376,14 +2369,12 @@ export default function SendModal({ open, onClose, onPayoutCreated, onRecipientC
                         <span className="text-gray-900 flex-1">{lastInstanceDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                       </div>
                     )}
-                    {selectedMethod !== 'email' && (
                     <div className="flex gap-6">
                       <span className="text-gray-500 w-28">Estimated arrival</span>
                       <span className="text-gray-900 flex-1">
                         {selectedMethod === 'ach' ? '2-3 business days' : selectedMethod === 'wire' ? 'Minutes' : selectedMethod === 'stablecoin' ? 'Seconds' : ''}
                       </span>
                     </div>
-                    )}
                   </div>
 
                   {/* Fees section */}

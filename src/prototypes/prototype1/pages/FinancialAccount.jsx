@@ -25,7 +25,7 @@ const activityByCurrency = {
     { amount: '-US$22,000.00', fees: '-$4.50', total: '-US$22,004.50', type: 'Send', from: 'Financial account', to: 'billing@scalefast.io', created: '24 Feb, 11:00' },
     { amount: '-US$950.00', fees: '-$4.50', total: '-US$954.50', type: 'Send', from: 'Financial account', to: 'raj.kumar@freelance.in', created: '23 Feb, 16:00' },
     { amount: '-US$8,400.00', fees: '-$4.50', total: '-US$8,404.50', type: 'Send', from: 'Financial account', to: 'chen.wei@globaltrade.cn', created: '21 Feb, 09:15' },
-    { amount: '-US$500.00', fees: '-$4.50', total: '-US$504.50', type: 'Send', from: 'Financial account', to: 'samuel.okafor@gmail.com', created: '20 Feb, 08:15' },
+    { amount: '-£500.00', fees: '-£3.80', total: '-£503.80', type: 'Send', from: 'Financial account', to: 'samuel.okafor@gmail.com', created: '20 Feb, 08:15' },
     { amount: '-US$12,500.00', fees: '-$4.50', total: '-US$12,504.50', type: 'Send', from: 'Financial account', to: 'finance@buildright.io', created: '18 Feb, 16:30' },
     { amount: '-US$3,200.00', fees: '-$4.50', total: '-US$3,204.50', type: 'Send', from: 'Financial account', to: 'tanaka.yuki@fastmail.jp', created: '17 Feb, 11:00' },
     { amount: '-US$750.00', fees: '-$4.50', total: '-US$754.50', type: 'Send', from: 'Financial account', to: 'priya.patel@outlook.com', created: '16 Feb, 22:10' },
