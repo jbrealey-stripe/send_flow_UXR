@@ -362,6 +362,10 @@ export default function FinancialAccount() {
                 <a
                   key={item.name}
                   href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (item.name === 'Manage recipients') navigate(`${basePath}/global-payouts?tab=Recipients`);
+                  }}
                   className="flex items-center gap-3 py-2 text-body-small text-subdued hover:text-default transition-colors"
                 >
                   <Icon name={item.icon} size="small" fill="currentColor" />

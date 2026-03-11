@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBasePath } from '../../../contexts/BasePath';
 import { Icon } from '../../../icons/SailIcons';
 import Badge from '../../../components/Badge';
@@ -124,7 +124,9 @@ function StatusBar({ states, total }) {
 }
 
 export default function GlobalPayouts() {
-  const [activeTab, setActiveTab] = useState('Overview');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabs.includes(initialTab) ? initialTab : 'Overview');
   const [activePayoutStatus, setActivePayoutStatus] = useState('All');
   const [activeRecipientStatus, setActiveRecipientStatus] = useState('All recipients');
   const [showSendModal, setShowSendModal] = useState(false);

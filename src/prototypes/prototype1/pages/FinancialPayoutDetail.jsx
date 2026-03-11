@@ -52,6 +52,37 @@ function userPayoutToDetail(p) {
   const total = p.amount + fee;
   const created = formatDate(p.initiatesOn || new Date());
   const methodMap = { email: 'Email', ach: 'ACH', wire: 'Wire', 'instant-to-card': 'Instant to card', stablecoin: 'Stablecoin' };
+  const isEmail = p.method === 'email';
+
+  if (isEmail) {
+    return {
+      id: p.id,
+      idFull: p.id,
+      amount: `US$${formatAmount(p.amount)}`,
+      currency: p.currency || 'USD',
+      status: 'Pending',
+      statusVariant: 'default',
+      isEmail: true,
+      payoutTo: p.recipientEmail,
+      traceId: '—',
+      from: 'Financial account',
+      to: p.recipientEmail,
+      payoutMethod: '—',
+      payoutDestination: '—',
+      statementDescriptor: '—',
+      noteToRecipient: '—',
+      expectedDelivery: '—',
+      total: {
+        payoutAmount: `US$${formatAmount(p.amount)}`,
+        total: `US$${formatAmount(p.amount)}`,
+      },
+      timeline: [
+        { event: 'Email sent to collect information', recipient: null, date: created },
+        { event: 'Payout to', recipient: p.recipientEmail, suffix: 'created', date: created },
+      ],
+    };
+  }
+
   return {
     id: p.id,
     idFull: p.id,
@@ -100,9 +131,16 @@ export default function FinancialPayoutDetail() {
 
       {/* Header */}
       <div className="mb-1">
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-display-small text-default">{payout.amount}</h1>
-          <Badge variant={badgeVariant}>{payout.status}</Badge>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-display-small text-default">{payout.amount}</h1>
+            <Badge variant={badgeVariant}>{payout.status}</Badge>
+          </div>
+          {payout.isEmail && (
+            <button className="px-4 py-2 border border-border rounded-lg text-label-small-emphasized text-default hover:bg-offset transition-colors cursor-pointer">
+              Cancel payout
+            </button>
+          )}
         </div>
         <p className="text-body-small text-subdued">
           Payout to <button className="text-brand hover:underline cursor-pointer">{payout.payoutTo}</button>
@@ -159,6 +197,7 @@ export default function FinancialPayoutDetail() {
                       {item.recipient && (
                         <> <button className="text-brand hover:underline cursor-pointer">{item.recipient}</button></>
                       )}
+                      {item.suffix && <> {item.suffix}</>}
                     </p>
                     <span className="text-body-small text-subdued shrink-0">{item.date}</span>
                   </div>
@@ -175,10 +214,14 @@ export default function FinancialPayoutDetail() {
             {/* OutboundPayment ID */}
             <div>
               <span className="text-label-small-emphasized text-default">OutboundPayment ID</span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <Icon name="duplicate" size="xsmall" fill="currentColor" className="text-icon-subdued" />
-                <button className="text-body-small text-default underline hover:text-brand cursor-pointer break-all text-left">{payout.id}</button>
-              </div>
+              {payout.isEmail ? (
+                <p className="text-body-small text-default mt-0.5">—</p>
+              ) : (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Icon name="duplicate" size="xsmall" fill="currentColor" className="text-icon-subdued" />
+                  <button className="text-body-small text-default underline hover:text-brand cursor-pointer break-all text-left">{payout.id}</button>
+                </div>
+              )}
             </div>
 
             {/* Trace ID */}
@@ -187,7 +230,11 @@ export default function FinancialPayoutDetail() {
                 <span className="text-label-small-emphasized text-default">Trace ID</span>
                 <Icon name="info" size="xsmall" fill="currentColor" className="text-icon-subdued" />
               </div>
-              <p className="text-body-small text-default underline break-all mt-0.5">{payout.traceId}</p>
+              {payout.isEmail ? (
+                <p className="text-body-small text-default mt-0.5">—</p>
+              ) : (
+                <p className="text-body-small text-default underline break-all mt-0.5">{payout.traceId}</p>
+              )}
             </div>
 
             {/* From */}
@@ -201,10 +248,14 @@ export default function FinancialPayoutDetail() {
             {/* To */}
             <div>
               <span className="text-label-small-emphasized text-default">To</span>
-              <div className="flex items-center gap-2 mt-0.5">
-                <Icon name="bank" size="xsmall" fill="currentColor" className="text-icon-subdued" />
-                <span className="text-body-small text-default">{payout.to}</span>
-              </div>
+              {payout.isEmail ? (
+                <p className="text-body-small text-default mt-0.5">{payout.to}</p>
+              ) : (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Icon name="bank" size="xsmall" fill="currentColor" className="text-icon-subdued" />
+                  <span className="text-body-small text-default">{payout.to}</span>
+                </div>
+              )}
             </div>
 
             {/* Payout method */}
@@ -213,16 +264,24 @@ export default function FinancialPayoutDetail() {
               <p className="text-body-small text-default mt-0.5">{payout.payoutMethod}</p>
             </div>
 
+            {/* Payout destination (email variant) */}
+            {payout.isEmail && (
+              <div>
+                <span className="text-label-small-emphasized text-default">Payout destination</span>
+                <p className="text-body-small text-default mt-0.5">{payout.payoutDestination}</p>
+              </div>
+            )}
+
             {/* Statement descriptor */}
             <div>
               <span className="text-label-small-emphasized text-default">Statement descriptor</span>
               <p className="text-body-small text-default mt-0.5">{payout.statementDescriptor}</p>
             </div>
 
-            {/* Internal note */}
+            {/* Note to recipient / Internal note */}
             <div>
-              <span className="text-label-small-emphasized text-default">Internal note</span>
-              <p className="text-body-small text-default mt-0.5">{payout.internalNote}</p>
+              <span className="text-label-small-emphasized text-default">{payout.isEmail ? 'Note to recipient' : 'Internal note'}</span>
+              <p className="text-body-small text-default mt-0.5">{payout.isEmail ? payout.noteToRecipient : payout.internalNote}</p>
             </div>
 
             {/* Expected delivery date */}
@@ -232,15 +291,17 @@ export default function FinancialPayoutDetail() {
             </div>
 
             {/* Receipt */}
-            <div>
-              <span className="text-label-small-emphasized text-default">Receipt</span>
-              <p className="mt-0.5">
-                <button className="text-body-small text-brand hover:underline cursor-pointer inline-flex items-center gap-1">
-                  View
-                  <Icon name="external" size="xsmall" fill="currentColor" />
-                </button>
-              </p>
-            </div>
+            {!payout.isEmail && (
+              <div>
+                <span className="text-label-small-emphasized text-default">Receipt</span>
+                <p className="mt-0.5">
+                  <button className="text-body-small text-brand hover:underline cursor-pointer inline-flex items-center gap-1">
+                    View
+                    <Icon name="external" size="xsmall" fill="currentColor" />
+                  </button>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Metadata */}
